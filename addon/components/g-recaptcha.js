@@ -11,10 +11,11 @@ export default Ember.Component.extend({
 
   renderReCaptcha() {
     if (Ember.isNone(window.grecaptcha)) {
-      Ember.run.later(() => {
+      this.renderTimer = Ember.run.later(() => {
         this.renderReCaptcha();
       }, 500);
     } else {
+      this.renderTimer = null;
       let container = this.$()[0];
       let properties = this.getProperties(
         'sitekey',
@@ -60,9 +61,15 @@ export default Ember.Component.extend({
 
   didInsertElement() {
     this._super(...arguments);
-    Ember.run.next(() => {
+    this.renderTimer = Ember.run.next(() => {
       this.renderReCaptcha();
     });
+  },
+
+  willDestroyElement() {
+    if (this.renderTimer) {
+      Ember.run.cancel(this.renderTimer);
+    }
   }
 
 });
